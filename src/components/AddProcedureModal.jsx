@@ -11,6 +11,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  Divider,
   FormControl,
   Grid,
   IconButton,
@@ -26,6 +27,7 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { procedureName } from "../assets/Data/json/procedureName";
 import { tax } from "../assets/Data/json/tax";
+import { createProcedure } from "../assets/Data/procedure/procedureSlice";
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
@@ -57,15 +59,17 @@ export default function AlertDialogSlide() {
 
   const taxCalculation = (price, selectedTax) => {
     const taxPercent = selectedTax || 0;
-    const numericPrice = parseFloat(price);
+    const selectedPrice = price || 0;
+    const numericPrice = parseFloat(selectedPrice);
     const taxAmount = (numericPrice * taxPercent) / 100;
     const totalAmount = numericPrice + taxAmount;
-    formik.setFieldValue("totalAmount", totalAmount || 0);
+    const roundedTotalAmount = totalAmount?.toFixed(2);
+    formik.setFieldValue("totalAmount", roundedTotalAmount || "0");
   };
 
   const formik = useFormik({
     initialValues: {
-      procedureName: "",
+      procedureName: {},
       price: "",
       tax: 0,
       totalAmount: "",
@@ -74,7 +78,20 @@ export default function AlertDialogSlide() {
     validationSchema: validationSchema,
     onSubmit: (values) => {
       // Handle form submission here (e.g., dispatch to Redux store)
-      console.log("Form submitted:", values);
+      dispatch(createProcedure(values)).then((resultAction) => {
+        if (createProcedure.fulfilled.match(resultAction)) {
+          // Handle success
+          console.log("Procedure created successfully!");
+          formik.resetForm();
+          dispatch(closeModal());
+        } else if (createProcedure.rejected.match(resultAction)) {
+          // Handle error
+          console.error(
+            "Failed to create procedure:",
+            resultAction.error.message
+          );
+        }
+      });
     },
   });
 
@@ -239,25 +256,26 @@ export default function AlertDialogSlide() {
               </Grid>
             </Grid>
           </form>
-          <DialogActions>
-            <Button
-              className="modal-action-cancel"
-              type="button"
-              variant="contained"
-              onClick={handleCancel}
-            >
-              Cancel
-            </Button>
-            <Button
-              className="modal-action-save"
-              type="submit"
-              variant="contained"
-              onClick={formik.handleSubmit}
-            >
-              Save
-            </Button>
-          </DialogActions>
         </DialogContent>
+        <Divider />
+        <DialogActions>
+          <Button
+            className="modal-action-cancel"
+            type="button"
+            variant="contained"
+            onClick={handleCancel}
+          >
+            Cancel
+          </Button>
+          <Button
+            className="modal-action-save"
+            type="submit"
+            variant="contained"
+            onClick={formik.handleSubmit}
+          >
+            Save
+          </Button>
+        </DialogActions>
       </Dialog>
     </React.Fragment>
   );

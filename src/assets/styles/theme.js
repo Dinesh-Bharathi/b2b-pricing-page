@@ -1,7 +1,6 @@
 /* eslint-disable no-use-before-define */
 /* eslint-disable no-unused-vars */
 import * as React from "react";
-import { red } from "@mui/material/colors";
 import { createTheme } from "@mui/material/styles";
 
 const theme = createTheme({
@@ -44,6 +43,15 @@ const theme = createTheme({
             color: "#42a5f5",
             marginLeft: 15,
           },
+          "&.datagrid-icon": {
+            color: "#E55C26",
+            border: "1px solid #E55C26",
+            borderRadius: "50%",
+            ":hover": {
+              backgroundColor: "#E55C26",
+              color: "#fff",
+            },
+          },
         },
       },
     },
@@ -64,7 +72,6 @@ const theme = createTheme({
             boxShadow: "none",
           },
           "&.modal-action-cancel": {
-            // gap: 4px;
             color: "#000",
             border: "1px solid #727272",
             padding: "4px 20px",
@@ -89,6 +96,24 @@ const theme = createTheme({
           padding: "24px 44px 40px",
           fontSize: "13px",
           fontWeight: "600",
+        },
+      },
+    },
+    MuiDataGrid: {
+      styleOverrides: {
+        root: {
+          // backgroundColor: "#aaa", // Replace with the desired background color
+        },
+        columnHeaders: {
+          backgroundColor: "#C3EAFF",
+        },
+        columnHeaderTitle: {
+          fontWeight: "600",
+        },
+        row: {
+          "&.odd-row": {
+            background: "#C3EAFF50",
+          },
         },
       },
     },
