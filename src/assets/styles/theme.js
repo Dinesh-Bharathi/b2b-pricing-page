@@ -16,12 +16,18 @@ const theme = createTheme({
     h4: {
       fontSize: "18px",
     },
+    h6: {
+      "&.confirmation-title": {
+        fontSize: "14px",
+        textAlign: "center",
+      },
+    },
   },
   components: {
     MuiCardHeader: {
       styleOverrides: {
         root: {
-          backgroundColor: "#42a5f5",
+          backgroundColor: "#1976d2",
           color: "#fff",
           "&.bgMain": {
             backgroundColor: "#1976d2",
@@ -80,6 +86,23 @@ const theme = createTheme({
             fontSize: "13px",
             boxShadow: "none",
           },
+          "&.modal-action-yes": {
+            color: "#fff",
+            padding: "4px 30px",
+            borderRadius: "21px",
+            backgroundColor: "#0062DD",
+            boxShadow: "none",
+            marginLeft: "16px",
+          },
+          "&.modal-action-no": {
+            color: "#000",
+            border: "1px solid #727272",
+            padding: "4px 30px",
+            borderRadius: "21px",
+            backgroundColor: "#EFEFEF",
+            fontSize: "13px",
+            boxShadow: "none",
+          },
         },
       },
     },
@@ -102,7 +125,7 @@ const theme = createTheme({
     MuiDataGrid: {
       styleOverrides: {
         root: {
-          // backgroundColor: "#aaa", // Replace with the desired background color
+          border: "none",
         },
         columnHeaders: {
           backgroundColor: "#C3EAFF",

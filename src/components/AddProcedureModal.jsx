@@ -27,7 +27,11 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { procedureName } from "../assets/Data/json/procedureName";
 import { tax } from "../assets/Data/json/tax";
-import { createProcedure } from "../assets/Data/procedure/procedureSlice";
+import {
+  createProcedure,
+  fetchProcedures,
+} from "../assets/Data/procedure/procedureSlice";
+import { enqueueSnackbar } from "notistack";
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
@@ -84,6 +88,10 @@ export default function AlertDialogSlide() {
           console.log("Procedure created successfully!");
           formik.resetForm();
           dispatch(closeModal());
+          dispatch(fetchProcedures());
+          enqueueSnackbar("Patient added successfully!", {
+            variant: "success",
+          });
         } else if (createProcedure.rejected.match(resultAction)) {
           // Handle error
           console.error(

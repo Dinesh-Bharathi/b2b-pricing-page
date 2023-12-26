@@ -14,6 +14,7 @@ import DescriptionDrawer from "../components/DescriptionDrawer";
 import AddProcedureModal from "../components/AddProcedureModal";
 import { useDispatch } from "react-redux";
 import { openModal } from "../components/modalSlice";
+import PricingDataGrid from "./PricingDataGrid";
 
 const drawerWidth = 380;
 
@@ -103,7 +104,6 @@ export default function PersistentDrawerRight() {
           </IconButton>
         </Toolbar>
       </AppBar>
-      <Main open={openDescription}></Main>
       <Drawer
         sx={{
           background: "#FEFBE9",
