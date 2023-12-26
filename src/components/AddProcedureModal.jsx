@@ -106,6 +106,7 @@ export const AlertDialogSlide = ({
             setSelectedProcedure(null);
             console.log(selectedProcedure);
             formik.resetForm();
+            setSelectedProcedure(null);
           } else if (updateProcedure.rejected.match(resultAction)) {
             // Handle error
             console.error(
@@ -148,7 +149,9 @@ export const AlertDialogSlide = ({
         note: selectedProcedure.note,
       });
     }
-  }, [selectedProcedure]);
+  }, [selectedProcedure, isOpen]);
+
+  console.log("selectedProcedure", selectedProcedure);
 
   return (
     <React.Fragment>
