@@ -3,11 +3,13 @@
 
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
+import { useDispatch } from "react-redux";
 
 // Define the initial state
 const initialState = {
   procedures: [],
   status: "idle",
+  loader: false,
   error: null,
 };
 
@@ -68,8 +70,15 @@ const procedureSlice = createSlice({
         state.status = "failed";
         state.error = action.error.message;
       })
+      .addCase(createProcedure.pending, (state, action) => {
+        state.loader = true;
+      })
       .addCase(createProcedure.fulfilled, (state, action) => {
+        state.loader = false;
         state.procedures.push(action.payload);
+      })
+      .addCase(updateProcedure.pending, (state, action) => {
+        state.loader = true;
       })
       .addCase(updateProcedure.fulfilled, (state, action) => {
         const { id, ...updatedData } = action.payload;
@@ -79,11 +88,16 @@ const procedureSlice = createSlice({
         if (existingProcedure) {
           Object.assign(existingProcedure, updatedData);
         }
+        state.loader = false;
+      })
+      .addCase(deleteProcedure.pending, (state, action) => {
+        state.loader = true;
       })
       .addCase(deleteProcedure.fulfilled, (state, action) => {
         state.procedures = state.procedures.filter(
           (procedure) => procedure.id !== action.payload
         );
+        state.loader = false;
       });
   },
 });
