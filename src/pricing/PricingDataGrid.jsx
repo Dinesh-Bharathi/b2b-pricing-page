@@ -9,6 +9,8 @@ import { Grid, IconButton, Skeleton } from "@mui/material";
 import { Delete, EditNote } from "@mui/icons-material";
 import ConfirmationModal from "../components/ConfirmationModal";
 import { enqueueSnackbar } from "notistack";
+import { openModal } from "../components/modalSlice";
+import { AlertDialogSlide } from "../components/AddProcedureModal";
 
 const skeletonColumns = [
   {
@@ -79,6 +81,7 @@ const PricingDataGrid = () => {
       dispatch(deleteProcedure(selectedProcedure.id));
       setConfirmationModalOpen(false);
       dispatch(fetchProcedures());
+      setSelectedProcedure(null);
       enqueueSnackbar("Patient deleted successfully!", {
         variant: "error",
       });
@@ -89,7 +92,13 @@ const PricingDataGrid = () => {
     setConfirmationModalOpen(false);
   };
 
-  console.log("procedures", procedures);
+  const handleEdit = (id) => {
+    const procedureToEdit = procedures.find((procedure) => procedure.id === id);
+    setSelectedProcedure(procedureToEdit);
+    dispatch(openModal());
+  };
+
+  console.log("selectedProcedure", selectedProcedure);
   const columns = [
     { field: "procedureName", headerName: "Procedure", width: 340 },
     { field: "note", headerName: "Note", width: 320 },
@@ -110,7 +119,12 @@ const PricingDataGrid = () => {
       renderCell: (params) => (
         <div style={{ display: "flex", alignItems: "center" }}>
           <IconButton className="datagrid-icon" aria-label="">
-            <EditNote fontSize="small" />
+            <EditNote
+              fontSize="small"
+              onClick={() => {
+                handleEdit(params.row.id);
+              }}
+            />
           </IconButton>
           <IconButton
             className="datagrid-icon"
@@ -157,6 +171,10 @@ const PricingDataGrid = () => {
         open={isConfirmationModalOpen}
         onClose={handleCancelDelete}
         onConfirm={handleConfirmDelete}
+      />
+      <AlertDialogSlide
+        selectedProcedure={selectedProcedure}
+        setSelectedProcedure={setSelectedProcedure}
       />
     </Grid>
   );

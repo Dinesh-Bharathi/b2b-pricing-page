@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Dialog from "@mui/material/Dialog";
 import Slide from "@mui/material/Slide";
 import {
@@ -30,6 +30,7 @@ import { tax } from "../assets/Data/json/tax";
 import {
   createProcedure,
   fetchProcedures,
+  updateProcedure,
 } from "../assets/Data/procedure/procedureSlice";
 import { enqueueSnackbar } from "notistack";
 
@@ -43,13 +44,19 @@ const validationSchema = Yup.object().shape({
   price: Yup.number()
     .required("Price is required")
     .positive("Price must be positive"),
-  tax: Yup.number().positive("Tax must be positive"),
+  tax: Yup.number()
+    .required("Tax is required")
+    .positive("Tax must be positive"),
   totalAmount: Yup.number().positive("Total amount must be positive"),
   note: Yup.string(),
 });
 
-export default function AlertDialogSlide() {
+export const AlertDialogSlide = ({
+  selectedProcedure,
+  setSelectedProcedure,
+}) => {
   const isOpen = useSelector((state) => state.modal.isOpen);
+  // const selectedProcedure = useSelector((state) => state.modal.data);
   const dispatch = useDispatch();
 
   const handleClose = () => {
@@ -59,6 +66,7 @@ export default function AlertDialogSlide() {
   const handleCancel = () => {
     formik.resetForm();
     dispatch(closeModal());
+    setSelectedProcedure(null);
   };
 
   const taxCalculation = (price, selectedTax) => {
@@ -73,7 +81,7 @@ export default function AlertDialogSlide() {
 
   const formik = useFormik({
     initialValues: {
-      procedureName: {},
+      procedureName: [],
       price: "",
       tax: 0,
       totalAmount: "",
@@ -81,27 +89,66 @@ export default function AlertDialogSlide() {
     },
     validationSchema: validationSchema,
     onSubmit: (values) => {
-      // Handle form submission here (e.g., dispatch to Redux store)
-      dispatch(createProcedure(values)).then((resultAction) => {
-        if (createProcedure.fulfilled.match(resultAction)) {
-          // Handle success
-          console.log("Procedure created successfully!");
-          formik.resetForm();
-          dispatch(closeModal());
-          dispatch(fetchProcedures());
-          enqueueSnackbar("Patient added successfully!", {
-            variant: "success",
-          });
-        } else if (createProcedure.rejected.match(resultAction)) {
-          // Handle error
-          console.error(
-            "Failed to create procedure:",
-            resultAction.error.message
-          );
-        }
-      });
+      if (selectedProcedure) {
+        // Handle update logic
+        dispatch(
+          updateProcedure({ id: selectedProcedure.id, updatedData: values })
+        ).then((resultAction) => {
+          if (updateProcedure.fulfilled.match(resultAction)) {
+            // Handle success
+            console.log("Procedure updated successfully!");
+            formik.resetForm();
+            dispatch(closeModal());
+            dispatch(fetchProcedures());
+            enqueueSnackbar("Procedure updated successfully!", {
+              variant: "warning",
+            });
+            setSelectedProcedure(null);
+            console.log(selectedProcedure);
+            formik.resetForm();
+          } else if (updateProcedure.rejected.match(resultAction)) {
+            // Handle error
+            console.error(
+              "Failed to update procedure:",
+              resultAction.error.message
+            );
+          }
+        });
+      } else {
+        // Handle create logic
+        dispatch(createProcedure(values)).then((resultAction) => {
+          if (createProcedure.fulfilled.match(resultAction)) {
+            // Handle success
+            console.log("Procedure created successfully!");
+            formik.resetForm();
+            dispatch(closeModal());
+            dispatch(fetchProcedures());
+            enqueueSnackbar("Procedure added successfully!", {
+              variant: "success",
+            });
+          } else if (createProcedure.rejected.match(resultAction)) {
+            // Handle error
+            console.error(
+              "Failed to create procedure:",
+              resultAction.error.message
+            );
+          }
+        });
+      }
     },
   });
+
+  useEffect(() => {
+    if (selectedProcedure) {
+      formik.setValues({
+        procedureName: selectedProcedure.procedureName,
+        price: selectedProcedure.price,
+        tax: selectedProcedure.tax,
+        totalAmount: selectedProcedure.totalAmount,
+        note: selectedProcedure.note,
+      });
+    }
+  }, [selectedProcedure]);
 
   return (
     <React.Fragment>
@@ -125,13 +172,13 @@ export default function AlertDialogSlide() {
                 <Close />
               </IconButton>
             }
-            title="Add Procedure"
+            title={selectedProcedure ? "Edit Procedure" : "Add Procedure"}
           />
         </DialogTitle>
         <DialogContent>
           <form onSubmit={formik.handleSubmit}>
             <Grid container spacing={2} mt={1} padding={0} pt={1}>
-              <Grid item md={2.2}>
+              <Grid item xs={12} md={2.2}>
                 <Autocomplete
                   disablePortal
                   id="combo-box-demo"
@@ -153,6 +200,7 @@ export default function AlertDialogSlide() {
                   renderInput={(params) => (
                     <TextField
                       {...params}
+                      fullWidth
                       label="Procedure name*"
                       name="procedureName"
                       value={formik.values.procedureName}
@@ -170,7 +218,7 @@ export default function AlertDialogSlide() {
                 />
               </Grid>
 
-              <Grid item md={2.2}>
+              <Grid item xs={12} md={2.2}>
                 <TextField
                   id=""
                   label="Price(INR)*"
@@ -187,7 +235,7 @@ export default function AlertDialogSlide() {
                   helperText={formik.touched.price && formik.errors.price}
                 />
               </Grid>
-              <Grid item md={2.2}>
+              <Grid item xs={12} md={2.2}>
                 <Autocomplete
                   disablePortal
                   id="combo-box-demo"
@@ -223,6 +271,7 @@ export default function AlertDialogSlide() {
                       {...params}
                       label="Tax*"
                       name="tax"
+                      fullWidth
                       value={formik.values.tax}
                       onChange={formik.handleChange}
                       error={formik.touched.tax && Boolean(formik.errors.tax)}
@@ -231,7 +280,7 @@ export default function AlertDialogSlide() {
                   )}
                 />
               </Grid>
-              <Grid item md={2.2}>
+              <Grid item xs={12} md={2.2}>
                 <TextField
                   id=""
                   label="Total amount(INR)"
@@ -249,7 +298,7 @@ export default function AlertDialogSlide() {
                   }
                 />
               </Grid>
-              <Grid item md={2.2}>
+              <Grid item xs={12} md={2.2}>
                 <TextField
                   id=""
                   label="Notes"
@@ -281,10 +330,10 @@ export default function AlertDialogSlide() {
             variant="contained"
             onClick={formik.handleSubmit}
           >
-            Save
+            {selectedProcedure ? "Update" : "Save"}
           </Button>
         </DialogActions>
       </Dialog>
     </React.Fragment>
   );
-}
+};

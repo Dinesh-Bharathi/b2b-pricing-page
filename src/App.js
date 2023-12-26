@@ -6,7 +6,7 @@ const App = () => {
   return (
     <div>
       <SnackbarProvider
-        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
         maxSnack={3}
       >
         <Pricing />
