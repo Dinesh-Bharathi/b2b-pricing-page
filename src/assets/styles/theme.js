@@ -2,6 +2,7 @@
 /* eslint-disable no-unused-vars */
 import * as React from "react";
 import { createTheme } from "@mui/material/styles";
+import zIndex from "@mui/material/styles/zIndex";
 
 const theme = createTheme({
   palette: {
@@ -59,6 +60,7 @@ const theme = createTheme({
             },
             "&.delete-icon": {
               border: "1px solid #B80000",
+              color: "#B80000",
               ":hover": {
                 backgroundColor: "#B80000",
                 color: "#fff",
@@ -144,6 +146,13 @@ const theme = createTheme({
           "&.odd-row": {
             background: "#C3EAFF50",
           },
+        },
+      },
+    },
+    MuiInputLabel: {
+      styleOverrides: {
+        root: {
+          fontSize: "14px",
         },
       },
     },

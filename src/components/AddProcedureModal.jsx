@@ -5,19 +5,13 @@ import {
   Autocomplete,
   Box,
   Button,
-  Card,
-  CardContent,
   CardHeader,
   DialogActions,
   DialogContent,
   DialogTitle,
   Divider,
-  FormControl,
   Grid,
   IconButton,
-  InputLabel,
-  MenuItem,
-  Select,
   TextField,
 } from "@mui/material";
 import { Close } from "@mui/icons-material";
@@ -52,12 +46,16 @@ const validationSchema = Yup.object().shape({
 });
 
 export const AlertDialogSlide = ({
-  selectedProcedure,
+  // selectedProcedure,
   setSelectedProcedure,
 }) => {
   const isOpen = useSelector((state) => state.modal.isOpen);
+  const getselectedProcedure = useSelector((state) => state?.modal?.data || {});
+  const selectedProcedure = getselectedProcedure.payload;
   // const selectedProcedure = useSelector((state) => state.modal.data);
   const dispatch = useDispatch();
+
+  // console.log("selectedProcedure", selectedProcedure);
 
   const handleClose = () => {
     dispatch(closeModal());
@@ -96,7 +94,7 @@ export const AlertDialogSlide = ({
         ).then((resultAction) => {
           if (updateProcedure.fulfilled.match(resultAction)) {
             // Handle success
-            console.log("Procedure updated successfully!");
+            // console.log("Procedure updated successfully!");
             formik.resetForm();
             dispatch(closeModal());
             dispatch(fetchProcedures());
@@ -104,7 +102,7 @@ export const AlertDialogSlide = ({
               variant: "warning",
             });
             setSelectedProcedure(null);
-            console.log(selectedProcedure);
+            // console.log(selectedProcedure);
             formik.resetForm();
             setSelectedProcedure(null);
           } else if (updateProcedure.rejected.match(resultAction)) {
@@ -121,9 +119,9 @@ export const AlertDialogSlide = ({
           if (createProcedure.fulfilled.match(resultAction)) {
             // Handle success
             console.log("Procedure created successfully!");
-            formik.resetForm();
             dispatch(closeModal());
             dispatch(fetchProcedures());
+            formik.resetForm();
             enqueueSnackbar("Procedure added successfully!", {
               variant: "success",
             });
@@ -141,15 +139,23 @@ export const AlertDialogSlide = ({
 
   useEffect(() => {
     if (selectedProcedure) {
+      // If selectedProcedure is not null, set form values for editing
+      const selectedProcedureNameOption = procedureName.data.find(
+        (option) => option.mastLookupValue === selectedProcedure.procedureName
+      );
+
       formik.setValues({
-        procedureName: selectedProcedure.procedureName,
+        procedureName: selectedProcedureNameOption || "", // Assign the result of find
         price: selectedProcedure.price,
         tax: selectedProcedure.tax,
         totalAmount: selectedProcedure.totalAmount,
-        note: selectedProcedure.note,
+        note: selectedProcedure.note || "",
       });
+    } else {
+      // If selectedProcedure is null, reset the form for adding a new procedure
+      formik.resetForm();
     }
-  }, [selectedProcedure, isOpen]);
+  }, [selectedProcedure]);
 
   return (
     <React.Fragment>
@@ -181,13 +187,13 @@ export const AlertDialogSlide = ({
             <Grid container spacing={2} mt={1} padding={0} pt={1}>
               <Grid item xs={12} md={2.2}>
                 <Autocomplete
-                  disablePortal
                   id="combo-box-demo"
                   options={procedureName.data}
                   getOptionLabel={(option) => option.mastLookupValue}
                   size="small"
                   fullWidth
                   disableClearable
+                  freeSolo
                   value={procedureName.data.find(
                     (option) =>
                       option.mastLookupValue === formik.values.procedureName
@@ -238,15 +244,10 @@ export const AlertDialogSlide = ({
               </Grid>
               <Grid item xs={12} md={2.2}>
                 <Autocomplete
-                  disablePortal
                   id="combo-box-demo"
                   options={tax.data}
                   getOptionLabel={(option) =>
                     `${option?.taxName} (${option?.taxPercent}%)`
-                  }
-                  getOptionSelected={(option, value) =>
-                    `${option?.taxName} (${option?.taxPercent}%)` ===
-                    `${value?.taxName} (${value?.taxPercent}%)`
                   }
                   isOptionEqualToValue={(option, value) =>
                     `${option?.taxName} (${option?.taxPercent}%)` ===
@@ -263,7 +264,7 @@ export const AlertDialogSlide = ({
                     taxCalculation(formik.values.price, newValue?.taxPercent);
                   }}
                   renderOption={(props, option) => (
-                    <Box component="li" {...props}>
+                    <Box component="" {...props}>
                       {option.taxName} - {option.taxPercent}
                     </Box>
                   )}

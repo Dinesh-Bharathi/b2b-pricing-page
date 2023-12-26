@@ -6,16 +6,16 @@ const modalSlice = createSlice({
   name: "modal",
   initialState: {
     isOpen: false,
-    data: null, // Add data property to store additional information
+    data: {},
   },
   reducers: {
-    openModal: (state, action) => {
+    openModal: (state, payload) => {
       state.isOpen = true;
-      state.data = action.payload; // Set the data property with the payload
+      state.data = payload;
     },
     closeModal: (state) => {
       state.isOpen = false;
-      state.data = null; // Clear data when closing modal
+      state.data = {};
     },
   },
 });

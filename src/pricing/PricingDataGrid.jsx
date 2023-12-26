@@ -5,7 +5,14 @@ import {
   deleteProcedure,
   fetchProcedures,
 } from "../assets/Data/procedure/procedureSlice";
-import { Grid, IconButton, Skeleton, Button, Typography } from "@mui/material";
+import {
+  Grid,
+  IconButton,
+  Skeleton,
+  Button,
+  Typography,
+  Box,
+} from "@mui/material";
 import { Delete, EditNote } from "@mui/icons-material";
 import ConfirmationModal from "../components/ConfirmationModal";
 import { enqueueSnackbar } from "notistack";
@@ -41,7 +48,8 @@ const skeletonColumns = [
 
 // Dummy data for skeleton loader
 const skeletonRows = Array.from({ length: 8 }, (_, index) => ({
-  id: `${index}`,
+  id: index,
+  key: index,
   procedureName: "",
   note: "",
   totalAmount: "",
@@ -96,17 +104,23 @@ const PricingDataGrid = () => {
   const handleEdit = (id) => {
     const procedureToEdit = procedures.find((procedure) => procedure.id === id);
     setSelectedProcedure(procedureToEdit);
-    dispatch(openModal());
+    dispatch(openModal(procedureToEdit));
   };
 
   // console.log("selectedProcedure", selectedProcedure);
   const columns = [
-    { field: "procedureName", headerName: "Procedure", width: 340 },
-    { field: "note", headerName: "Note", width: 320 },
+    {
+      field: "procedureName",
+      headerName: "Procedure",
+      width: 340,
+      label: "Procedure",
+    },
+    { field: "note", headerName: "Note", width: 320, label: "Note" },
     {
       field: "totalAmount",
       headerName: "Price incl taxes(INR)",
       width: 240,
+      label: "Total Amount",
       renderCell: (params) => (
         <div style={{ display: "flex", alignItems: "center" }}>
           ₹ {params.value}
@@ -117,15 +131,17 @@ const PricingDataGrid = () => {
       field: "actions",
       headerName: "Actions",
       width: 150,
+      label: "Actions",
       renderCell: (params) => (
-        <div style={{ display: "flex", alignItems: "center" }}>
-          <IconButton className="datagrid-icon" aria-label="">
-            <EditNote
-              fontSize="small"
-              onClick={() => {
-                handleEdit(params.row.id);
-              }}
-            />
+        <Box sx={{ display: "flex", alignItems: "center" }}>
+          <IconButton
+            className="datagrid-icon"
+            aria-label=""
+            onClick={() => {
+              handleEdit(params.row.id);
+            }}
+          >
+            <EditNote fontSize="small" />
           </IconButton>
           <IconButton
             className="datagrid-icon delete-icon"
@@ -135,12 +151,10 @@ const PricingDataGrid = () => {
           >
             <Delete fontSize="small" />
           </IconButton>
-        </div>
+        </Box>
       ),
     },
   ];
-
-  console.log("status", status);
 
   return (
     <Grid container>
@@ -155,6 +169,7 @@ const PricingDataGrid = () => {
               getRowClassName={getRowClassName}
             />
           )}
+
           {status === "failed" && (
             <div style={{ textAlign: "center" }}>
               <div>
