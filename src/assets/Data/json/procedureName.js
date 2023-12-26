@@ -363,5 +363,3 @@ export const procedureName = {
   ],
   message: "Data fetched successfully",
 };
-
-console.log("first", procedureName.data);

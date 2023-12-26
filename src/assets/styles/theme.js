@@ -57,6 +57,13 @@ const theme = createTheme({
               backgroundColor: "#E55C26",
               color: "#fff",
             },
+            "&.delete-icon": {
+              border: "1px solid #B80000",
+              ":hover": {
+                backgroundColor: "#B80000",
+                color: "#fff",
+              },
+            },
           },
         },
       },

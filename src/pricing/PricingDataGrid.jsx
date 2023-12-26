@@ -128,7 +128,7 @@ const PricingDataGrid = () => {
             />
           </IconButton>
           <IconButton
-            className="datagrid-icon"
+            className="datagrid-icon delete-icon"
             aria-label=""
             sx={{ ml: 2 }}
             onClick={() => handleDelete(params.row.id)}

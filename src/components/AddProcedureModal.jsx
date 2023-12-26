@@ -151,8 +151,6 @@ export const AlertDialogSlide = ({
     }
   }, [selectedProcedure, isOpen]);
 
-  console.log("selectedProcedure", selectedProcedure);
-
   return (
     <React.Fragment>
       <Dialog
