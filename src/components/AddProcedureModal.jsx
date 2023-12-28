@@ -111,6 +111,12 @@ export const AlertDialogSlide = ({
               "Failed to update procedure:",
               resultAction.error.message
             );
+            enqueueSnackbar(
+              "Failed to update procedure:" + resultAction.error.message,
+              {
+                variant: "error",
+              }
+            );
           }
         });
       } else {
@@ -130,6 +136,12 @@ export const AlertDialogSlide = ({
             console.error(
               "Failed to create procedure:",
               resultAction.error.message
+            );
+            enqueueSnackbar(
+              "Failed to create procedure:" + resultAction.error.message,
+              {
+                variant: "error",
+              }
             );
           }
         });

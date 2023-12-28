@@ -65,10 +65,12 @@ const procedureSlice = createSlice({
       .addCase(fetchProcedures.fulfilled, (state, action) => {
         state.status = "succeeded";
         state.procedures = action.payload;
+        state.loader = false;
       })
       .addCase(fetchProcedures.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.error.message;
+        state.loader = false;
       })
       .addCase(createProcedure.pending, (state, action) => {
         state.loader = true;
@@ -76,6 +78,9 @@ const procedureSlice = createSlice({
       .addCase(createProcedure.fulfilled, (state, action) => {
         state.loader = false;
         state.procedures.push(action.payload);
+      })
+      .addCase(createProcedure.rejected, (state, action) => {
+        state.loader = false;
       })
       .addCase(updateProcedure.pending, (state, action) => {
         state.loader = true;
