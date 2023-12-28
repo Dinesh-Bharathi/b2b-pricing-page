@@ -88,10 +88,10 @@ const PricingDataGrid = () => {
     if (selectedProcedure) {
       dispatch(deleteProcedure(selectedProcedure.id));
       setConfirmationModalOpen(false);
-      dispatch(fetchProcedures());
+      // dispatch(fetchProcedures());
       setSelectedProcedure(null);
       enqueueSnackbar("Patient deleted successfully!", {
-        variant: "error",
+        variant: "success",
       });
     }
   };

@@ -97,9 +97,9 @@ export const AlertDialogSlide = ({
             // console.log("Procedure updated successfully!");
             formik.resetForm();
             dispatch(closeModal());
-            dispatch(fetchProcedures());
+            // dispatch(fetchProcedures());
             enqueueSnackbar("Procedure updated successfully!", {
-              variant: "warning",
+              variant: "success",
             });
             setSelectedProcedure(null);
             // console.log(selectedProcedure);
@@ -120,7 +120,7 @@ export const AlertDialogSlide = ({
             // Handle success
             console.log("Procedure created successfully!");
             dispatch(closeModal());
-            dispatch(fetchProcedures());
+            // dispatch(fetchProcedures());
             formik.resetForm();
             enqueueSnackbar("Procedure added successfully!", {
               variant: "success",
