@@ -145,7 +145,7 @@ export const AlertDialogSlide = ({
       );
 
       formik.setValues({
-        procedureName: selectedProcedureNameOption || "", // Assign the result of find
+        procedureName: `{${selectedProcedureNameOption}}` || "", // Assign the result of find
         price: selectedProcedure.price,
         tax: selectedProcedure.tax,
         totalAmount: selectedProcedure.totalAmount,

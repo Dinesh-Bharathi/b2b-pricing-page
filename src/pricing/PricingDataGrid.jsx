@@ -107,7 +107,16 @@ const PricingDataGrid = () => {
     dispatch(openModal(procedureToEdit));
   };
 
-  // console.log("selectedProcedure", selectedProcedure);
+  const handleSelectionChange = (selectionModel) => {
+    // Log the selected row values
+    if (selectionModel.length > 0) {
+      const selectedRows = selectionModel.map((selectedId) =>
+        procedures.find((row) => row.id === selectedId)
+      );
+      console.log("Selected Rows:", selectedRows);
+    }
+  };
+
   const columns = [
     {
       field: "procedureName",
@@ -192,8 +201,10 @@ const PricingDataGrid = () => {
                 pageSize={5}
                 rowsPerPageOptions={[5, 10, 20]}
                 checkboxSelection={false}
-                disableSelectionOnClick
+                disableRowSelectionOnClick
                 getRowClassName={getRowClassName}
+                onSelectionModelChange={handleSelectionChange}
+                autoPageSize
               />
             ) : (
               <div style={{ textAlign: "center" }}>
