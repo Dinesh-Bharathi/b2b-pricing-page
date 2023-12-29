@@ -1,4 +1,4 @@
-export const procedureName = {
+const procedureNameJson = {
   status: true,
   data: [
     {
@@ -363,3 +363,5 @@ export const procedureName = {
   ],
   message: "Data fetched successfully",
 };
+
+export default procedureNameJson;

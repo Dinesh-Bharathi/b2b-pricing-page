@@ -11,12 +11,13 @@ import IconButton from "@mui/material/IconButton";
 import { AddCircle, Close, Home, QuestionMark } from "@mui/icons-material";
 import { Button } from "@mui/material";
 import DescriptionDrawer from "../components/DescriptionDrawer";
-import AddProcedureModal, {
-  AlertDialogSlide,
-} from "../components/AddProcedureModal";
+// import AddProcedureModal, {
+//   AlertDialogSlide,
+// } from "../components/AddProcedureModal";
 import { useDispatch } from "react-redux";
 import { openModal } from "../components/modalSlice";
 import PricingDataGrid from "./PricingDataGrid";
+import AddProcedureModal from "../components/AddProcedureModal";
 
 const drawerWidth = 380;
 
@@ -73,7 +74,8 @@ export default function PersistentDrawerRight() {
   return (
     <Box sx={{ display: "flex" }}>
       <CssBaseline />
-      <AlertDialogSlide />
+      {/* <AlertDialogSlide /> */}
+      <AddProcedureModal />
       <AppBar position="fixed" open={openDescription}>
         <Toolbar>
           <IconButton className="nav-icon">

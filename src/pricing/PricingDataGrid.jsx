@@ -17,42 +17,39 @@ import { Delete, EditNote } from "@mui/icons-material";
 import ConfirmationModal from "../components/ConfirmationModal";
 import { enqueueSnackbar } from "notistack";
 import { openModal } from "../components/modalSlice";
-import { AlertDialogSlide } from "../components/AddProcedureModal";
+import AddProcedureModal from "../components/AddProcedureModal";
 
-const skeletonColumns = [
+const SkeletonColumns = [
   {
-    width: 540,
-    renderCell: (params) => (
-      <Skeleton width={"100%"} height={40} animation="wave" />
-    ),
+    field: "type",
+    headerName: "Type",
+    minWidth: 340,
+    renderCell: (params) => <Skeleton width="100%" height="40px" />,
   },
   {
-    width: 420,
-    renderCell: (params) => (
-      <Skeleton width={"100%"} height={40} animation="wave" />
-    ),
+    field: "percentage",
+    headerName: "Percentage (%)",
+    minWidth: 220,
+    renderCell: (params) => <Skeleton width="100%" height="40px" />,
   },
   {
-    width: 340,
-    renderCell: (params) => (
-      <Skeleton width={"100%"} height={40} animation="wave" />
-    ),
+    field: "notes",
+    headerName: "Notes",
+    minWidth: 240,
+    renderCell: (params) => <Skeleton width="100%" height="40px" />,
   },
   {
-    width: 250,
-    renderCell: (params) => (
-      <Skeleton width={"100%"} height={40} animation="wave" />
-    ),
+    field: "actions",
+    headerName: "Actions",
+    minWidth: 180,
+    renderCell: (params) => <Skeleton width="100%" height="40px" />,
   },
 ];
 
-// Dummy data for skeleton loader
-const skeletonRows = Array.from({ length: 8 }, (_, index) => ({
-  id: index,
-  key: index,
-  procedureName: "",
-  note: "",
-  totalAmount: "",
+const SkeletonRows = Array.from({ length: 10 }, (item, idx) => ({
+  id: idx,
+  type: "",
+  percentage: "",
   actions: "",
 }));
 
@@ -171,8 +168,8 @@ const PricingDataGrid = () => {
         <div style={{ height: 500, width: "100%", padding: "0 1em" }}>
           {status === "loading" && (
             <DataGrid
-              rows={skeletonRows}
-              columns={skeletonColumns}
+              rows={SkeletonRows}
+              columns={SkeletonColumns}
               pageSize={5}
               rowsPerPageOptions={[5, 10, 20]}
               getRowClassName={getRowClassName}
@@ -223,33 +220,6 @@ const PricingDataGrid = () => {
                 />
               </div>
             ))}
-          {/* {status === "succeeded" && procedures.length ? (
-            <DataGrid
-              rows={procedures}
-              columns={columns}
-              pageSize={5}
-              rowsPerPageOptions={[5, 10, 20]}
-              checkboxSelection={false}
-              disableSelectionOnClick
-              getRowClassName={getRowClassName}
-            />
-          ) : (
-            <div style={{ textAlign: "center" }}>
-              <div>
-                <Typography variant="h6" color="text.primary">
-                  No procedures found
-                </Typography>
-                <Button onClick={() => dispatch(openModal())}>
-                  Add Procedure
-                </Button>
-              </div>
-              <img
-                src="https://img.freepik.com/free-vector/hand-drawn-no-data-concept_52683-127818.jpg?w=900&t=st=1703575596~exp=1703576196~hmac=0634a9ad01310ae45a37246849389ca973576c263a9f9a27979a1448e9aebe50"
-                alt="nodata"
-                style={{ width: "500px" }}
-              />
-            </div>
-          )} */}
         </div>
       </Grid>
       {/* Confirmation Modal */}
@@ -258,9 +228,9 @@ const PricingDataGrid = () => {
         onClose={handleCancelDelete}
         onConfirm={handleConfirmDelete}
       />
-      <AlertDialogSlide
-        selectedProcedure={selectedProcedure}
-        setSelectedProcedure={setSelectedProcedure}
+      <AddProcedureModal
+        initialValues={selectedProcedure}
+        setInitialValues={setSelectedProcedure}
       />
     </Grid>
   );

@@ -1,29 +1,27 @@
-import React, { useEffect } from "react";
-import Dialog from "@mui/material/Dialog";
-import Slide from "@mui/material/Slide";
+import { AddCircle, Close, HighlightOff } from "@mui/icons-material";
 import {
   Autocomplete,
   Box,
   Button,
   CardHeader,
+  Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
-  Divider,
   Grid,
   IconButton,
+  Slide,
   TextField,
 } from "@mui/material";
-import { Close } from "@mui/icons-material";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { closeModal } from "./modalSlice";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { procedureName } from "../assets/Data/json/procedureName";
+import procedureNameJson from "../assets/Data/json/procedureName";
 import { tax } from "../assets/Data/json/tax";
 import {
   createProcedure,
-  fetchProcedures,
   updateProcedure,
 } from "../assets/Data/procedure/procedureSlice";
 import { enqueueSnackbar } from "notistack";
@@ -32,79 +30,95 @@ const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
 
-// Define the validation schema
 const validationSchema = Yup.object().shape({
   procedureName: Yup.string().required("Please select any procedure"),
   price: Yup.number()
     .required("Price is required")
     .positive("Price must be positive"),
-  tax: Yup.number()
-    .required("Tax is required")
-    .positive("Tax must be positive"),
+  tax: Yup.number().positive("Tax must be positive"),
   totalAmount: Yup.number().positive("Total amount must be positive"),
-  note: Yup.string(),
+  additionalProcedureFields: Yup.array().of(
+    Yup.object().shape({
+      procedureName: Yup.string().required("Please select any procedure"),
+      price: Yup.number()
+        .required("Price is required")
+        .positive("Price must be positive"),
+      tax: Yup.number().positive("Tax must be positive"),
+      totalAmount: Yup.number().positive("Total amount must be positive"),
+    })
+  ),
 });
 
-export const AlertDialogSlide = ({
-  // selectedProcedure,
-  setSelectedProcedure,
-}) => {
-  const isOpen = useSelector((state) => state.modal.isOpen);
-  const getselectedProcedure = useSelector((state) => state?.modal?.data || {});
-  const selectedProcedure = getselectedProcedure.payload;
-  // const selectedProcedure = useSelector((state) => state.modal.data);
+const AddProcedureModal = ({ initialValues, setInitialValues }) => {
   const dispatch = useDispatch();
-
-  // console.log("selectedProcedure", selectedProcedure);
-
+  const isOpen = useSelector((state) => state.modal.isOpen);
+  const [additionalProcedures, setAdditionalProcedures] = useState(
+    initialValues?.additionalProcedureFields?.length || 0
+  );
   const handleClose = () => {
     dispatch(closeModal());
-  };
-
-  const handleCancel = () => {
+    setInitialValues(null);
+    setAdditionalProcedures(0);
     formik.resetForm();
-    dispatch(closeModal());
-    setSelectedProcedure(null);
-  };
-
-  const taxCalculation = (price, selectedTax) => {
-    const taxPercent = selectedTax || 0;
-    const selectedPrice = price || 0;
-    const numericPrice = parseFloat(selectedPrice);
-    const taxAmount = (numericPrice * taxPercent) / 100;
-    const totalAmount = numericPrice + taxAmount;
-    const roundedTotalAmount = totalAmount?.toFixed(2);
-    formik.setFieldValue("totalAmount", roundedTotalAmount || "0");
   };
 
   const formik = useFormik({
     initialValues: {
-      procedureName: [],
-      price: "",
-      tax: 0,
-      totalAmount: "",
-      note: "",
+      procedureName: initialValues?.procedureName || "",
+      price: initialValues?.price || "",
+      tax: initialValues?.tax || 0,
+      totalAmount: initialValues?.totalAmount || "",
+      note: initialValues?.note || "",
+      additionalProcedureFields:
+        initialValues?.additionalProcedureFields ||
+        Array.from({ length: additionalProcedures }, () => ({
+          procedureName: "",
+          price: "",
+          tax: 0,
+          totalAmount: "",
+          note: "",
+        })),
     },
     validationSchema: validationSchema,
     onSubmit: (values) => {
-      if (selectedProcedure) {
+      // Create an array to store all procedures (main procedure + additional procedures)
+      const allProcedures = [];
+
+      // Add the main procedure to the array
+      allProcedures.push({
+        procedureName: values.procedureName,
+        price: values.price,
+        tax: values.tax,
+        totalAmount: values.totalAmount,
+        note: values.note,
+      });
+
+      // Add additional procedures to the array
+      values.additionalProcedureFields.forEach((field) => {
+        allProcedures.push({
+          procedureName: field.procedureName,
+          price: field.price,
+          tax: field.tax,
+          totalAmount: field.totalAmount,
+          note: field.note,
+        });
+      });
+
+      if (initialValues) {
         // Handle update logic
         dispatch(
-          updateProcedure({ id: selectedProcedure.id, updatedData: values })
+          updateProcedure({ id: initialValues?.id, updatedData: values })
         ).then((resultAction) => {
+          dispatch(closeModal());
+          setInitialValues(null);
+          formik.resetForm();
           if (updateProcedure.fulfilled.match(resultAction)) {
             // Handle success
-            // console.log("Procedure updated successfully!");
+            console.log("Procedure updated successfully!");
             formik.resetForm();
-            dispatch(closeModal());
-            // dispatch(fetchProcedures());
             enqueueSnackbar("Procedure updated successfully!", {
               variant: "success",
             });
-            setSelectedProcedure(null);
-            // console.log(selectedProcedure);
-            formik.resetForm();
-            setSelectedProcedure(null);
           } else if (updateProcedure.rejected.match(resultAction)) {
             // Handle error
             console.error(
@@ -120,54 +134,106 @@ export const AlertDialogSlide = ({
           }
         });
       } else {
-        // Handle create logic
-        dispatch(createProcedure(values)).then((resultAction) => {
-          if (createProcedure.fulfilled.match(resultAction)) {
-            // Handle success
-            console.log("Procedure created successfully!");
-            dispatch(closeModal());
-            // dispatch(fetchProcedures());
-            formik.resetForm();
-            enqueueSnackbar("Procedure added successfully!", {
-              variant: "success",
-            });
-          } else if (createProcedure.rejected.match(resultAction)) {
-            // Handle error
-            console.error(
-              "Failed to create procedure:",
-              resultAction.error.message
-            );
-            enqueueSnackbar(
-              "Failed to create procedure:" + resultAction.error.message,
-              {
-                variant: "error",
-              }
-            );
-          }
+        // Dispatch an action for each procedure
+        allProcedures.forEach((procedure) => {
+          dispatch(createProcedure(procedure)).then((resultAction) => {
+            if (createProcedure.fulfilled.match(resultAction)) {
+              // Handle success
+              console.log("Procedure created successfully!");
+              dispatch(closeModal());
+              formik.resetForm();
+              enqueueSnackbar("Procedure added successfully!", {
+                variant: "success",
+              });
+            } else if (createProcedure.rejected.match(resultAction)) {
+              // Handle error
+              console.error(
+                "Failed to create procedure:",
+                resultAction.error.message
+              );
+              enqueueSnackbar(
+                "Failed to create procedure:" + resultAction.error.message,
+                {
+                  variant: "error",
+                }
+              );
+            }
+          });
         });
       }
     },
   });
 
   useEffect(() => {
-    if (selectedProcedure) {
-      // If selectedProcedure is not null, set form values for editing
-      const selectedProcedureNameOption = procedureName.data.find(
-        (option) => option.mastLookupValue === selectedProcedure.procedureName
-      );
-
+    // If initialValues prop is provided, update formik values when modal opens
+    if (isOpen && initialValues) {
       formik.setValues({
-        procedureName: `{${selectedProcedureNameOption}}` || "", // Assign the result of find
-        price: selectedProcedure.price,
-        tax: selectedProcedure.tax,
-        totalAmount: selectedProcedure.totalAmount,
-        note: selectedProcedure.note || "",
+        procedureName: initialValues.procedureName || "", // Set it to an empty string if it's undefined
+        price: initialValues.price || "",
+        tax: initialValues.tax || 0,
+        totalAmount: initialValues.totalAmount || "",
+        note: initialValues.note || "",
+        additionalProcedureFields:
+          initialValues.additionalProcedureFields ||
+          Array.from({ length: additionalProcedures }, () => ({
+            procedureName: "",
+            price: "",
+            tax: 0,
+            totalAmount: "",
+            note: "",
+          })),
       });
-    } else {
-      // If selectedProcedure is null, reset the form for adding a new procedure
-      formik.resetForm();
+      setAdditionalProcedures(
+        initialValues.additionalProcedureFields?.length || 0
+      );
     }
-  }, [selectedProcedure]);
+  }, [isOpen, initialValues, additionalProcedures]);
+
+  const handleAddProcedure = () => {
+    setAdditionalProcedures((prev) => prev + 1);
+    formik.setFieldValue(
+      "additionalProcedureFields",
+      Array.from({ length: additionalProcedures + 1 }, () => ({
+        procedureName: "",
+        price: "",
+        tax: 0,
+        totalAmount: "",
+        note: "",
+      }))
+    );
+  };
+
+  const handleRemoveProcedure = (index) => {
+    setAdditionalProcedures((prev) => prev - 1);
+    const updatedFields = [...formik.values.additionalProcedureFields];
+    updatedFields.splice(index, 1);
+    formik.setFieldValue("additionalProcedureFields", updatedFields);
+  };
+
+  const taxCalculation = (price, selectedTax) => {
+    const taxPercent = selectedTax || 0;
+    const selectedPrice = price || 0;
+    const numericPrice = parseFloat(selectedPrice);
+    const taxAmount = (numericPrice * taxPercent) / 100;
+    const totalAmount = numericPrice + taxAmount;
+    const roundedTotalAmount = totalAmount?.toFixed(2);
+    formik.setFieldValue("totalAmount", roundedTotalAmount || "0");
+  };
+
+  const taxCalculationAdditional = (price, selectedTax, index) => {
+    const taxPercent = selectedTax || 0;
+    const selectedPrice = price || 0;
+    const numericPrice = parseFloat(selectedPrice);
+    const taxAmount = (numericPrice * taxPercent) / 100;
+    const totalAmount = numericPrice + taxAmount;
+    const roundedTotalAmount = totalAmount?.toFixed(2);
+    formik.setFieldValue(
+      `additionalProcedureFields[${index}].totalAmount`,
+      roundedTotalAmount || "0"
+    );
+  };
+
+  // console.log("error", formik.errors);
 
   return (
     <React.Fragment>
@@ -175,13 +241,14 @@ export const AlertDialogSlide = ({
         open={isOpen}
         TransitionComponent={Transition}
         keepMounted
-        // onClose={handleClose}
+        onClose={handleClose}
         aria-describedby="alert-dialog-slide-description"
         maxWidth="lg"
         fullWidth
       >
         <DialogTitle>
           <CardHeader
+            title={initialValues ? "Edit Procedure" : "Add Procedure"}
             action={
               <IconButton
                 aria-label=""
@@ -191,150 +258,386 @@ export const AlertDialogSlide = ({
                 <Close />
               </IconButton>
             }
-            title={selectedProcedure ? "Edit Procedure" : "Add Procedure"}
           />
         </DialogTitle>
         <DialogContent>
-          <form onSubmit={formik.handleSubmit}>
-            <Grid container spacing={2} mt={1} padding={0} pt={1}>
-              <Grid item xs={12} md={2.2}>
-                <Autocomplete
-                  id="combo-box-demo"
-                  options={procedureName.data}
-                  getOptionLabel={(option) => option.mastLookupValue}
-                  size="small"
-                  fullWidth
-                  disableClearable
-                  freeSolo
-                  value={procedureName.data.find(
-                    (option) =>
-                      option.mastLookupValue === formik.values.procedureName
-                  )}
-                  onChange={(event, newValue) => {
-                    formik.setFieldValue(
-                      "procedureName",
-                      newValue?.mastLookupValue || ""
-                    );
-                  }}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
+          <Grid container spacing={2} mt={1} padding={0} pt={1}>
+            <Grid item xs={2.2}>
+              <Autocomplete
+                disableClearable
+                size="small"
+                fullWidth
+                options={procedureNameJson.data || []}
+                getOptionLabel={(option) => option.mastLookupValue || ""}
+                onChange={(event, value) => {
+                  formik.setFieldValue(
+                    "procedureName",
+                    value?.mastLookupValue || ""
+                  );
+                }}
+                onInputChange={(event, newInputValue) => {
+                  formik.setFieldValue("procedureName", newInputValue || "");
+                }}
+                value={procedureNameJson.data.find(
+                  (option) =>
+                    option.mastLookupValue === formik.values.procedureName
+                )}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Procedure Name"
+                    fullWidth
+                    error={
+                      formik.touched.procedureName &&
+                      Boolean(formik.errors.procedureName)
+                    }
+                    helperText={
+                      formik.touched.procedureName &&
+                      formik.errors.procedureName
+                    }
+                  />
+                )}
+              />
+            </Grid>
+            <Grid item xs={2.2}>
+              <TextField
+                id="price"
+                label="Price"
+                type="number"
+                size="small"
+                fullWidth
+                onChange={(e) => {
+                  formik.setFieldValue("price", e.target.value);
+                  taxCalculation(e.target.value, formik.values.tax);
+                }}
+                {...formik.getFieldProps("price")}
+                error={formik.touched.price && Boolean(formik.errors.price)}
+                helperText={formik.touched.price && formik.errors.price}
+              />
+            </Grid>
+            <Grid item xs={2.2}>
+              <Autocomplete
+                id="combo-box-demo"
+                options={tax.data}
+                getOptionLabel={(option) =>
+                  `${option?.taxName} (${option?.taxPercent}%)`
+                }
+                isOptionEqualToValue={(option, value) =>
+                  `${option?.taxName} (${option?.taxPercent}%)` ===
+                  `${value?.taxName} (${value?.taxPercent}%)`
+                }
+                size="small"
+                fullWidth
+                disableClearable
+                value={tax.data.find(
+                  (option) => option.taxName === formik.values.tax
+                )}
+                onChange={(event, newValue) => {
+                  formik.setFieldValue("tax", newValue?.taxPercent || 0);
+                  taxCalculation(formik.values.price, newValue?.taxPercent);
+                }}
+                renderOption={(props, option) => (
+                  <Box component="" {...props}>
+                    {option.taxName} - {option.taxPercent}
+                  </Box>
+                )}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Tax*"
+                    name="tax"
+                    fullWidth
+                    value={formik.values.tax}
+                    onChange={formik.handleChange}
+                    error={formik.touched.tax && Boolean(formik.errors.tax)}
+                    helperText={formik.touched.tax && formik.errors.tax}
+                  />
+                )}
+              />
+            </Grid>
+            <Grid item xs={12} md={2.2}>
+              <TextField
+                id=""
+                label="Total amount(INR)"
+                name="totalAmount"
+                value={formik.values.totalAmount}
+                // onChange={formik.handleChange}
+                size="small"
+                fullWidth
+                error={
+                  formik.touched.totalAmount &&
+                  Boolean(formik.errors.totalAmount)
+                }
+                helperText={
+                  formik.touched.totalAmount && formik.errors.totalAmount
+                }
+              />
+            </Grid>
+            <Grid item xs={12} md={2.2}>
+              <TextField
+                id=""
+                label="Notes"
+                name="note"
+                value={formik.values.note}
+                onChange={formik.handleChange}
+                size="small"
+                fullWidth
+              />
+            </Grid>
+          </Grid>
+          <Grid container>
+            {formik.values.additionalProcedureFields.map((field, index) => (
+              <React.Fragment key={index}>
+                <Grid container spacing={2} mt={1}>
+                  <Grid item xs={2.2}>
+                    <Autocomplete
+                      disableClearable
+                      size="small"
                       fullWidth
-                      label="Procedure name*"
-                      name="procedureName"
-                      value={formik.values.procedureName}
-                      onChange={formik.handleChange}
+                      options={procedureNameJson.data || []}
+                      getOptionLabel={(option) => option.mastLookupValue || ""}
+                      onChange={(event, value) => {
+                        formik.setFieldValue(
+                          `additionalProcedureFields[${index}].procedureName`,
+                          value?.mastLookupValue || ""
+                        );
+                      }}
+                      onInputChange={(event, newInputValue) => {
+                        formik.setFieldValue(
+                          `additionalProcedureFields[${index}].procedureName`,
+                          newInputValue || ""
+                        );
+                      }}
+                      value={procedureNameJson.data.find(
+                        (option) =>
+                          option.mastLookupValue === field.procedureName
+                      )}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label="Procedure Name"
+                          fullWidth
+                          error={
+                            formik.touched.additionalProcedureFields &&
+                            formik.touched.additionalProcedureFields[index] &&
+                            formik.touched.additionalProcedureFields[index]
+                              .procedureName &&
+                            Boolean(
+                              formik.errors.additionalProcedureFields &&
+                                formik.errors.additionalProcedureFields[
+                                  index
+                                ] &&
+                                formik.errors.additionalProcedureFields[index]
+                                  .procedureName
+                            )
+                          }
+                          helperText={
+                            formik.touched.additionalProcedureFields &&
+                            formik.touched.additionalProcedureFields[index] &&
+                            formik.touched.additionalProcedureFields[index]
+                              .procedureName &&
+                            formik.errors.additionalProcedureFields &&
+                            formik.errors.additionalProcedureFields[index] &&
+                            formik.errors.additionalProcedureFields[index]
+                              .procedureName
+                          }
+                        />
+                      )}
+                    />
+                  </Grid>
+                  <Grid item xs={2.2}>
+                    <TextField
+                      label="Price"
+                      size="small"
+                      type="number"
+                      fullWidth
+                      {...formik.getFieldProps(
+                        `additionalProcedureFields[${index}].price`
+                      )}
                       error={
-                        formik.touched.procedureName &&
-                        Boolean(formik.errors.procedureName)
+                        formik.touched.additionalProcedureFields &&
+                        formik.touched.additionalProcedureFields[index] &&
+                        formik.touched.additionalProcedureFields[index].price &&
+                        Boolean(
+                          formik.errors.additionalProcedureFields &&
+                            formik.errors.additionalProcedureFields[index] &&
+                            formik.errors.additionalProcedureFields[index].price
+                        )
                       }
                       helperText={
-                        formik.touched.procedureName &&
-                        formik.errors.procedureName
+                        formik.touched.additionalProcedureFields &&
+                        formik.touched.additionalProcedureFields[index] &&
+                        formik.touched.additionalProcedureFields[index].price &&
+                        formik.errors.additionalProcedureFields &&
+                        formik.errors.additionalProcedureFields[index] &&
+                        formik.errors.additionalProcedureFields[index].price
                       }
                     />
-                  )}
-                />
-              </Grid>
-
-              <Grid item xs={12} md={2.2}>
-                <TextField
-                  id=""
-                  label="Price(INR)*"
-                  type="number"
-                  name="price"
-                  value={formik.values.price}
-                  onChange={(e) => {
-                    formik.setFieldValue("price", e.target.value);
-                    taxCalculation(e.target.value, formik.values.tax);
-                  }}
-                  size="small"
-                  fullWidth
-                  error={formik.touched.price && Boolean(formik.errors.price)}
-                  helperText={formik.touched.price && formik.errors.price}
-                />
-              </Grid>
-              <Grid item xs={12} md={2.2}>
-                <Autocomplete
-                  id="combo-box-demo"
-                  options={tax.data}
-                  getOptionLabel={(option) =>
-                    `${option?.taxName} (${option?.taxPercent}%)`
-                  }
-                  isOptionEqualToValue={(option, value) =>
-                    `${option?.taxName} (${option?.taxPercent}%)` ===
-                    `${value?.taxName} (${value?.taxPercent}%)`
-                  }
-                  size="small"
-                  fullWidth
-                  disableClearable
-                  value={tax.data.find(
-                    (option) => option.taxName === formik.values.tax
-                  )}
-                  onChange={(event, newValue) => {
-                    formik.setFieldValue("tax", newValue?.taxPercent || 0);
-                    taxCalculation(formik.values.price, newValue?.taxPercent);
-                  }}
-                  renderOption={(props, option) => (
-                    <Box component="" {...props}>
-                      {option.taxName} - {option.taxPercent}
-                    </Box>
-                  )}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Tax*"
-                      name="tax"
+                  </Grid>
+                  <Grid item xs={2.2}>
+                    <Autocomplete
+                      id={`additionalProcedureFields[${index}].tax`}
+                      options={tax.data}
+                      getOptionLabel={(option) =>
+                        `${option?.taxName} (${option?.taxPercent}%)`
+                      }
+                      isOptionEqualToValue={(option, value) =>
+                        `${option?.taxName} (${option?.taxPercent}%)` ===
+                        `${value?.taxName} (${value?.taxPercent}%)`
+                      }
+                      size="small"
                       fullWidth
-                      value={formik.values.tax}
-                      onChange={formik.handleChange}
-                      error={formik.touched.tax && Boolean(formik.errors.tax)}
-                      helperText={formik.touched.tax && formik.errors.tax}
+                      disableClearable
+                      value={tax.data.find(
+                        (option) =>
+                          option.taxName ===
+                          formik.values.additionalProcedureFields[index].tax
+                      )}
+                      onChange={(event, newValue) => {
+                        formik.setFieldValue(
+                          `additionalProcedureFields[${index}].tax`,
+                          newValue?.taxPercent || 0
+                        );
+                        taxCalculationAdditional(
+                          formik.values.additionalProcedureFields[index].price,
+                          newValue?.taxPercent,
+                          index
+                        );
+                      }}
+                      renderOption={(props, option) => (
+                        <Box component="li" {...props}>
+                          {option.taxName} - {option.taxPercent}
+                        </Box>
+                      )}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label="Tax*"
+                          name={`additionalProcedureFields[${index}].tax`}
+                          fullWidth
+                          value={
+                            formik.values.additionalProcedureFields[index].tax
+                          }
+                          onChange={formik.handleChange}
+                          error={
+                            formik.touched.additionalProcedureFields &&
+                            formik.touched.additionalProcedureFields[index] &&
+                            formik.touched.additionalProcedureFields[index]
+                              .tax &&
+                            Boolean(
+                              formik.errors.additionalProcedureFields &&
+                                formik.errors.additionalProcedureFields[
+                                  index
+                                ] &&
+                                formik.errors.additionalProcedureFields[index]
+                                  .tax
+                            )
+                          }
+                          helperText={
+                            formik.touched.additionalProcedureFields &&
+                            formik.touched.additionalProcedureFields[index] &&
+                            formik.touched.additionalProcedureFields[index]
+                              .tax &&
+                            formik.errors.additionalProcedureFields &&
+                            formik.errors.additionalProcedureFields[index] &&
+                            formik.errors.additionalProcedureFields[index].tax
+                          }
+                        />
+                      )}
                     />
-                  )}
-                />
-              </Grid>
-              <Grid item xs={12} md={2.2}>
-                <TextField
-                  id=""
-                  label="Total amount(INR)"
-                  name="totalAmount"
-                  value={formik.values.totalAmount}
-                  // onChange={formik.handleChange}
-                  size="small"
-                  fullWidth
-                  error={
-                    formik.touched.totalAmount &&
-                    Boolean(formik.errors.totalAmount)
-                  }
-                  helperText={
-                    formik.touched.totalAmount && formik.errors.totalAmount
-                  }
-                />
-              </Grid>
-              <Grid item xs={12} md={2.2}>
-                <TextField
-                  id=""
-                  label="Notes"
-                  name="note"
-                  value={formik.values.note}
-                  onChange={formik.handleChange}
-                  size="small"
-                  fullWidth
-                  error={formik.touched.note && Boolean(formik.errors.note)}
-                  helperText={formik.touched.note && formik.errors.note}
-                />
-              </Grid>
+                  </Grid>
+                  <Grid item xs={2.2}>
+                    <TextField
+                      label={
+                        formik.values.additionalProcedureFields[index]
+                          .totalAmount === ""
+                          ? "Total Amount"
+                          : ""
+                      }
+                      name={`additionalProcedureFields[${index}].totalAmount`}
+                      value={
+                        formik.values.additionalProcedureFields[index]
+                          .totalAmount
+                      }
+                      size="small"
+                      fullWidth
+                      error={
+                        formik.touched.additionalProcedureFields &&
+                        formik.touched.additionalProcedureFields[index] &&
+                        formik.touched.additionalProcedureFields[index]
+                          .totalAmount &&
+                        Boolean(
+                          formik.errors.additionalProcedureFields &&
+                            formik.errors.additionalProcedureFields[index] &&
+                            formik.errors.additionalProcedureFields[index]
+                              .totalAmount
+                        )
+                      }
+                      helperText={
+                        formik.touched.additionalProcedureFields &&
+                        formik.touched.additionalProcedureFields[index] &&
+                        formik.touched.additionalProcedureFields[index]
+                          .totalAmount &&
+                        formik.errors.additionalProcedureFields &&
+                        formik.errors.additionalProcedureFields[index] &&
+                        formik.errors.additionalProcedureFields[index]
+                          .totalAmount
+                      }
+                    />
+                  </Grid>
+                  <Grid item xs={2.2}>
+                    <TextField
+                      label="Notes"
+                      name={`additionalProcedureFields[${index}].note`}
+                      value={
+                        formik.values.additionalProcedureFields[index].note ||
+                        ""
+                      }
+                      onChange={formik.handleChange}
+                      size="small"
+                      fullWidth
+                    />
+                  </Grid>
+                  <Grid item xs={1}>
+                    <IconButton onClick={() => handleRemoveProcedure(index)}>
+                      <HighlightOff sx={{ color: "red" }} />
+                    </IconButton>
+                  </Grid>
+                </Grid>
+              </React.Fragment>
+            ))}
+          </Grid>
+          <Grid container mt={2}>
+            <Grid item xs={12}>
+              {!initialValues ? (
+                <Button
+                  className="add-procedure"
+                  variant="contained"
+                  disableElevation
+                  onClick={handleAddProcedure}
+                >
+                  <AddCircle sx={{ color: "#42a5f5", mr: 1 }} />
+                  Add procedure
+                </Button>
+              ) : (
+                <Box>
+                  <Box>
+                    <Button disabled></Button>
+                  </Box>
+                  <Box>
+                    <Button disabled></Button>
+                  </Box>
+                </Box>
+              )}
             </Grid>
-          </form>
+          </Grid>
         </DialogContent>
-        <Divider />
         <DialogActions>
           <Button
             className="modal-action-cancel"
             type="button"
             variant="contained"
-            onClick={handleCancel}
+            onClick={handleClose}
           >
             Cancel
           </Button>
@@ -344,10 +647,12 @@ export const AlertDialogSlide = ({
             variant="contained"
             onClick={formik.handleSubmit}
           >
-            {selectedProcedure ? "Update" : "Save"}
+            Save
           </Button>
         </DialogActions>
       </Dialog>
     </React.Fragment>
   );
 };
+
+export default AddProcedureModal;
