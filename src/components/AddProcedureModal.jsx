@@ -73,7 +73,7 @@ const AddProcedureModal = ({ initialValues, setInitialValues }) => {
         initialValues?.additionalProcedureFields ||
         Array.from({ length: additionalProcedures }, () => ({
           procedureName: "",
-          price: "",
+          price: 0,
           tax: 0,
           totalAmount: "",
           note: "",
@@ -110,6 +110,7 @@ const AddProcedureModal = ({ initialValues, setInitialValues }) => {
           updateProcedure({ id: initialValues?.id, updatedData: values })
         ).then((resultAction) => {
           dispatch(closeModal());
+          handleClose();
           setInitialValues(null);
           formik.resetForm();
           if (updateProcedure.fulfilled.match(resultAction)) {
@@ -141,6 +142,7 @@ const AddProcedureModal = ({ initialValues, setInitialValues }) => {
               // Handle success
               console.log("Procedure created successfully!");
               dispatch(closeModal());
+              handleClose();
               formik.resetForm();
               enqueueSnackbar("Procedure added successfully!", {
                 variant: "success",
@@ -195,7 +197,7 @@ const AddProcedureModal = ({ initialValues, setInitialValues }) => {
       "additionalProcedureFields",
       Array.from({ length: additionalProcedures + 1 }, () => ({
         procedureName: "",
-        price: "",
+        price: 0,
         tax: 0,
         totalAmount: "",
         note: "",
@@ -227,13 +229,14 @@ const AddProcedureModal = ({ initialValues, setInitialValues }) => {
     const taxAmount = (numericPrice * taxPercent) / 100;
     const totalAmount = numericPrice + taxAmount;
     const roundedTotalAmount = totalAmount?.toFixed(2);
+    // console.log("totalAmount", totalAmount);
     formik.setFieldValue(
       `additionalProcedureFields[${index}].totalAmount`,
       roundedTotalAmount || "0"
     );
   };
 
-  // console.log("error", formik.errors);
+  // console.log("formik", formik.errors, formik.values);
 
   return (
     <React.Fragment>
@@ -300,19 +303,33 @@ const AddProcedureModal = ({ initialValues, setInitialValues }) => {
               />
             </Grid>
             <Grid item xs={2.2}>
-              <TextField
+              {/* <TextField
                 id="price"
                 label="Price"
                 type="number"
                 size="small"
+                value={formik.values.price}
                 fullWidth
                 onChange={(e) => {
-                  formik.setFieldValue("price", e.target.value);
-                  taxCalculation(e.target.value, formik.values.tax);
+                  // formik.setFieldValue("price", e.target.value);
+                  console.log("values", formik.values);
+                  // taxCalculation(e.target.value, formik.values.tax);
                 }}
                 {...formik.getFieldProps("price")}
                 error={formik.touched.price && Boolean(formik.errors.price)}
                 helperText={formik.touched.price && formik.errors.price}
+              /> */}
+              <TextField
+                id=""
+                label="Price"
+                type="number"
+                size="small"
+                value={formik.values.price}
+                onChange={(e) => {
+                  formik.setFieldValue("price", e.target.value);
+                  taxCalculation(e.target.value, formik.values.tax);
+                  // console.log("values", formik.values);
+                }}
               />
             </Grid>
             <Grid item xs={2.2}>
@@ -451,9 +468,25 @@ const AddProcedureModal = ({ initialValues, setInitialValues }) => {
                       size="small"
                       type="number"
                       fullWidth
-                      {...formik.getFieldProps(
-                        `additionalProcedureFields[${index}].price`
-                      )}
+                      // {...formik.getFieldProps(
+                      //   `additionalProcedureFields[${index}].price`
+                      // )}
+                      onChange={(event) => {
+                        formik.setFieldValue(
+                          `additionalProcedureFields[${index}].price`,
+                          event.target.value
+                        );
+                        // console.log(
+                        //   "formik.values.additionalProcedureFields[priceCVhange]",
+                        //   formik.values.additionalProcedureFields[index].tax
+                        // );
+                        taxCalculationAdditional(
+                          event.target.value,
+                          formik.values.additionalProcedureFields[index].tax,
+                          index
+                        );
+                        // console.log("additional value", formik.values);
+                      }}
                       error={
                         formik.touched.additionalProcedureFields &&
                         formik.touched.additionalProcedureFields[index] &&
@@ -498,9 +531,13 @@ const AddProcedureModal = ({ initialValues, setInitialValues }) => {
                           `additionalProcedureFields[${index}].tax`,
                           newValue?.taxPercent || 0
                         );
+                        // console.log(
+                        //   ",852882",
+                        //   formik.values.additionalProcedureFields[index]
+                        // );
                         taxCalculationAdditional(
                           formik.values.additionalProcedureFields[index].price,
-                          newValue?.taxPercent,
+                          newValue.taxPercent || 0,
                           index
                         );
                       }}
