@@ -193,22 +193,25 @@ const AddProcedureModal = ({ initialValues, setInitialValues }) => {
 
   const handleAddProcedure = () => {
     setAdditionalProcedures((prev) => prev + 1);
-    formik.setFieldValue(
-      "additionalProcedureFields",
-      Array.from({ length: additionalProcedures + 1 }, () => ({
+
+    formik.setFieldValue("additionalProcedureFields", [
+      ...formik.values.additionalProcedureFields,
+      {
         procedureName: "",
         price: 0,
         tax: 0,
         totalAmount: "",
         note: "",
-      }))
-    );
+      },
+    ]);
   };
 
   const handleRemoveProcedure = (index) => {
-    setAdditionalProcedures((prev) => prev - 1);
+    // console.log("object", index);
+    // setAdditionalProcedures((prev) => prev - 1);
     const updatedFields = [...formik.values.additionalProcedureFields];
     updatedFields.splice(index, 1);
+    // console.log("updatedFields", updatedFields);
     formik.setFieldValue("additionalProcedureFields", updatedFields);
   };
 
@@ -403,8 +406,13 @@ const AddProcedureModal = ({ initialValues, setInitialValues }) => {
             </Grid>
           </Grid>
           <Grid container>
-            {formik.values.additionalProcedureFields.map((field, index) => (
+            {/* {console.log(
+              "additionalProcedureFields",
+              formik?.values?.additionalProcedureFields
+            )} */}
+            {formik?.values?.additionalProcedureFields?.map((field, index) => (
               <React.Fragment key={index}>
+                {/* {console.log("index", index, field)} */}
                 <Grid container spacing={2} mt={1}>
                   <Grid item xs={2.2}>
                     <Autocomplete
