@@ -14,6 +14,7 @@ const theme = createTheme({
     },
   },
   typography: {
+    fontFamily: "Poppins,sans-serif",
     h4: {
       fontSize: "18px",
     },
@@ -73,6 +74,7 @@ const theme = createTheme({
     MuiButton: {
       styleOverrides: {
         root: {
+          textTransform: "capitalize",
           "&.add-procedure": {
             backgroundColor: "#E5F6FF",
             borderRadius: "50px",

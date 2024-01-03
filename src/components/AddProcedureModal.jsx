@@ -64,17 +64,17 @@ const AddProcedureModal = ({ initialValues, setInitialValues }) => {
 
   const formik = useFormik({
     initialValues: {
-      procedureName: initialValues?.procedureName || "",
+      procedureName: initialValues?.procedureName || null,
       price: initialValues?.price || "",
-      tax: initialValues?.tax || 0,
+      tax: initialValues?.tax || null,
       totalAmount: initialValues?.totalAmount || "",
       note: initialValues?.note || "",
       additionalProcedureFields:
         initialValues?.additionalProcedureFields ||
         Array.from({ length: additionalProcedures }, () => ({
-          procedureName: "",
+          procedureName: null,
           price: 0,
-          tax: 0,
+          tax: null,
           totalAmount: "",
           note: "",
         })),
@@ -136,6 +136,7 @@ const AddProcedureModal = ({ initialValues, setInitialValues }) => {
         });
       } else {
         // Dispatch an action for each procedure
+        console.log("procedures", allProcedures);
         allProcedures.forEach((procedure) => {
           dispatch(createProcedure(procedure)).then((resultAction) => {
             if (createProcedure.fulfilled.match(resultAction)) {
@@ -144,9 +145,6 @@ const AddProcedureModal = ({ initialValues, setInitialValues }) => {
               dispatch(closeModal());
               handleClose();
               formik.resetForm();
-              enqueueSnackbar("Procedure added successfully!", {
-                variant: "success",
-              });
             } else if (createProcedure.rejected.match(resultAction)) {
               // Handle error
               console.error(
@@ -161,6 +159,9 @@ const AddProcedureModal = ({ initialValues, setInitialValues }) => {
               );
             }
           });
+        });
+        enqueueSnackbar("Procedure added successfully!", {
+          variant: "success",
         });
       }
     },
@@ -247,7 +248,7 @@ const AddProcedureModal = ({ initialValues, setInitialValues }) => {
         open={isOpen}
         TransitionComponent={Transition}
         keepMounted
-        onClose={handleClose}
+        // onClose={handleClose}
         aria-describedby="alert-dialog-slide-description"
         maxWidth="lg"
         fullWidth
@@ -274,15 +275,15 @@ const AddProcedureModal = ({ initialValues, setInitialValues }) => {
                 size="small"
                 fullWidth
                 options={procedureNameJson.data || []}
-                getOptionLabel={(option) => option.mastLookupValue || ""}
+                getOptionLabel={(option) => option.mastLookupValue || null}
                 onChange={(event, value) => {
                   formik.setFieldValue(
                     "procedureName",
-                    value?.mastLookupValue || ""
+                    value?.mastLookupValue || null
                   );
                 }}
                 onInputChange={(event, newInputValue) => {
-                  formik.setFieldValue("procedureName", newInputValue || "");
+                  formik.setFieldValue("procedureName", newInputValue || null);
                 }}
                 value={procedureNameJson.data.find(
                   (option) =>
@@ -353,7 +354,7 @@ const AddProcedureModal = ({ initialValues, setInitialValues }) => {
                   (option) => option.taxName === formik.values.tax
                 )}
                 onChange={(event, newValue) => {
-                  formik.setFieldValue("tax", newValue?.taxPercent || 0);
+                  formik.setFieldValue("tax", newValue?.taxPercent || null);
                   taxCalculation(formik.values.price, newValue?.taxPercent);
                 }}
                 renderOption={(props, option) => (

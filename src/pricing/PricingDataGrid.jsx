@@ -13,7 +13,7 @@ import {
   Typography,
   Box,
 } from "@mui/material";
-import { Delete, EditNote } from "@mui/icons-material";
+import { CurrencyRupee, Delete, EditNote } from "@mui/icons-material";
 import ConfirmationModal from "../components/ConfirmationModal";
 import { enqueueSnackbar } from "notistack";
 import { openModal } from "../components/modalSlice";
@@ -129,7 +129,7 @@ const PricingDataGrid = () => {
       label: "Total Amount",
       renderCell: (params) => (
         <div style={{ display: "flex", alignItems: "center" }}>
-          ₹ {params.value}
+          <CurrencyRupee sx={{ fontSize: "14px", mr: 0.5 }} /> {params.value}
         </div>
       ),
     },

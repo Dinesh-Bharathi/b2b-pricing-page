@@ -9,6 +9,7 @@ const App = () => {
       <SnackbarProvider
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
         maxSnack={3}
+        autoHideDuration={1000}
       >
         <Loader />
         <Pricing />
