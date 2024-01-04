@@ -90,6 +90,7 @@ export default function PersistentDrawerRight() {
             disableElevation
             onClick={() => {
               dispatch(openModal());
+              // setOpenDescription(false);
             }}
           >
             <AddCircle sx={{ color: "#42a5f5", mr: 1 }} />
@@ -121,6 +122,7 @@ export default function PersistentDrawerRight() {
         variant="persistent"
         anchor="right"
         open={openDescription}
+        onClose={(event, reason) => setOpenDescription(false)}
       >
         <DescriptionDrawer handleClose={handleDrawerClose} />
       </Drawer>

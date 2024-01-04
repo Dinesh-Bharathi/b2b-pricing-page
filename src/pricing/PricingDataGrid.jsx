@@ -65,6 +65,7 @@ const PricingDataGrid = () => {
 
   const [selectedProcedure, setSelectedProcedure] = useState(null);
   const [isConfirmationModalOpen, setConfirmationModalOpen] = useState(false);
+  console.log("DataGridprocedures", procedures);
 
   useEffect(() => {
     // Fetch procedures when the component mounts
@@ -121,7 +122,7 @@ const PricingDataGrid = () => {
       width: 340,
       label: "Procedure",
     },
-    { field: "note", headerName: "Note", width: 320, label: "Note" },
+    { field: "note", headerName: "Note", width: 300, label: "Note" },
     {
       field: "totalAmount",
       headerName: "Price incl taxes(INR)",

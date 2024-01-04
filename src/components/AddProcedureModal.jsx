@@ -8,6 +8,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  Divider,
   Grid,
   IconButton,
   Slide,
@@ -145,6 +146,9 @@ const AddProcedureModal = ({ initialValues, setInitialValues }) => {
               dispatch(closeModal());
               handleClose();
               formik.resetForm();
+              enqueueSnackbar("Procedure added successfully!", {
+                variant: "success",
+              });
             } else if (createProcedure.rejected.match(resultAction)) {
               // Handle error
               console.error(
@@ -159,9 +163,6 @@ const AddProcedureModal = ({ initialValues, setInitialValues }) => {
               );
             }
           });
-        });
-        enqueueSnackbar("Procedure added successfully!", {
-          variant: "success",
         });
       }
     },
@@ -252,6 +253,8 @@ const AddProcedureModal = ({ initialValues, setInitialValues }) => {
         aria-describedby="alert-dialog-slide-description"
         maxWidth="lg"
         fullWidth
+        className="dialog-paper"
+        // sx={{ borderRadius: "16px" }}
       >
         <DialogTitle>
           <CardHeader
@@ -334,11 +337,13 @@ const AddProcedureModal = ({ initialValues, setInitialValues }) => {
                   taxCalculation(e.target.value, formik.values.tax);
                   // console.log("values", formik.values);
                 }}
+                error={formik.touched.price && Boolean(formik.errors.price)}
+                helperText={formik.touched.price && formik.errors.price}
               />
             </Grid>
             <Grid item xs={2.2}>
               <Autocomplete
-                id="combo-box-demo"
+                id="tax"
                 options={tax.data}
                 getOptionLabel={(option) =>
                   `${option?.taxName} (${option?.taxPercent}%)`
@@ -678,7 +683,8 @@ const AddProcedureModal = ({ initialValues, setInitialValues }) => {
             </Grid>
           </Grid>
         </DialogContent>
-        <DialogActions>
+        <Divider />
+        <DialogActions sx={{ padding: "0.5em 1em" }}>
           <Button
             className="modal-action-cancel"
             type="button"

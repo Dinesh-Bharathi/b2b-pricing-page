@@ -15,6 +15,7 @@ const theme = createTheme({
   },
   typography: {
     fontFamily: "Poppins,sans-serif",
+    fontSize: 13,
     h4: {
       fontSize: "18px",
     },
@@ -155,6 +156,13 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           fontSize: "14px",
+        },
+      },
+    },
+    MuiDialog: {
+      styleOverrides: {
+        paper: {
+          borderRadius: "16px",
         },
       },
     },
